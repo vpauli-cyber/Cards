@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNA CARD HUB</title>
+    <title>CNA CARD HUB - Packs & Collection</title>
     <style>
         :root {
             --bg-color: #1e1e1e;
             --card-bg: #2d2d2d;
-            --primary: #cc0000; /* Vermelho CNA Sólido */
+            --primary: #cc0000;
+            --primary-dark: #990000;
             --text-main: #ffffff;
             --text-muted: #aaaaaa;
             --border-color: #444444;
-            --grid-gap: 20px;
+            --grid-gap: 15px;
+            --chat-width: 350px;
         }
 
         body {
@@ -35,209 +37,206 @@
             border-bottom: 4px solid var(--primary);
         }
 
-        h1 { 
-            margin: 0; 
-            font-size: 2rem; 
-            color: var(--primary);
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
+        h1 { margin: 0; font-size: 2rem; color: var(--primary); font-weight: 800; }
         
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             width: 90%;
             margin-top: 40px;
+            margin-bottom: 100px;
         }
 
-        /* --- Missão Diária --- */
+        /* --- Missão e Pack --- */
         .mission-box {
             background: var(--card-bg);
             border-left: 6px solid var(--primary);
             border-radius: 6px;
             padding: 20px 30px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 15px;
             margin-bottom: 40px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .mission-box.completed-state {
+            border-left-color: #f1c40f; /* Dourado quando pronto para abrir pack */
+            background: #3a3a3a;
         }
 
-        .mission-info h3 { margin: 0 0 5px 0; color: var(--text-main); font-size: 1.2rem; }
+        .mission-header { display: flex; justify-content: space-between; align-items: center; }
+        .mission-info h3 { margin: 0 0 5px 0; font-size: 1.2rem; }
         .mission-info p { margin: 0; color: var(--text-muted); }
         
+        .mission-progress-container {
+            width: 100%; height: 10px; background-color: #444;
+            border-radius: 5px; overflow: hidden;
+        }
+
+        .mission-progress-bar {
+            height: 100%; width: 0%; background-color: #27ae60;
+            transition: width 0.5s ease;
+        }
+
         .reward-badge {
-            background: #444;
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.9rem;
+            background: #444; color: #fff; padding: 8px 16px;
+            border-radius: 4px; font-weight: bold; font-size: 0.9rem;
         }
 
-        /* --- Área de Código --- */
-        .code-area {
-            display: flex;
-            gap: 0;
-            margin-bottom: 50px;
-            justify-content: center;
-        }
-
-        input[type="text"] {
+        /* Botão de Abrir Pack (Inicialmente escondido) */
+        #btn-open-pack {
+            display: none;
+            background: linear-gradient(45deg, #f1c40f, #e67e22);
+            color: #000;
+            border: none;
             padding: 15px;
-            background: #fff;
-            color: #333;
-            border: none;
-            border-radius: 6px 0 0 6px;
-            width: 300px;
-            font-size: 1rem;
-            text-transform: uppercase;
-            outline: none;
-        }
-
-        button {
-            padding: 15px 30px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 0 6px 6px 0;
+            font-weight: 800;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
-            transition: background 0.2s;
+            border-radius: 4px;
+            text-transform: uppercase;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+            100% { transform: scale(1); }
         }
 
-        button:hover { background-color: #990000; }
-
-        h2 { 
-            border-bottom: 2px solid var(--border-color); 
-            padding-bottom: 10px; 
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-        }
-
-        /* --- Grid de Cards (Responsividade) --- */
+        /* --- Grid de Coleção --- */
         .collection-grid {
             display: grid;
             gap: var(--grid-gap);
-            padding-bottom: 50px;
-            /* Padrão para telas grandes (Desktop): 4 colunas */
             grid-template-columns: repeat(4, 1fr); 
+            padding-bottom: 50px;
         }
 
-        /* Media Query para Telas Médias (Tablets, 768px a 1024px) */
-        @media (max-width: 1024px) {
-            .collection-grid {
-                /* 3 Colunas */
-                grid-template-columns: repeat(3, 1fr); 
-            }
-        }
-
-        /* Media Query para Telas Pequenas (Celulares, até 600px) */
-        @media (max-width: 600px) {
-            .collection-grid {
-                /* 2 Colunas */
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .code-area {
-                flex-direction: column;
-                align-items: center;
-            }
-            .code-area input[type="text"], .code-area button {
-                width: 100%;
-                box-sizing: border-box;
-                border-radius: 6px;
-            }
-            .mission-box {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-        }
-        /* Fim das Media Queries */
+        @media (max-width: 800px) { .collection-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 500px) { .collection-grid { grid-template-columns: repeat(2, 1fr); } }
 
         .card {
             background: var(--card-bg);
             border-radius: 8px;
             position: relative;
             aspect-ratio: 2/3;
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             transition: all 0.3s ease;
             overflow: hidden; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        /* Área da Imagem */
-        .card-image-wrapper {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        .card-image-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: filter 0.3s, transform 0.3s;
-            /* AJUSTE PARA REMOVER BORDA BRANCA */
-            transform: scale(1.02); 
-            /* -------------------------------------- */
-        }
-
-        /* ESTADO: DESBLOQUEADO (Padrão) */
-        .card.unlocked {
             cursor: pointer;
         }
-        .card.unlocked:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-        }
-        .card.unlocked .card-image-wrapper img {
-            filter: none; /* Imagem normal */
+
+        .card-image-wrapper { width: 100%; height: 100%; }
+        .card-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Estado Bloqueado */
+        .card.locked .card-image-wrapper img { filter: blur(5px) grayscale(100%); opacity: 0.5; }
+        .card.locked { border-style: dashed; }
+
+        /* Estado Desbloqueado */
+        .card.unlocked { border-color: transparent; }
+        .card.unlocked:hover { transform: translateY(-5px); z-index: 10; }
+        
+        /* Cores de Raridade na Borda Inferior */
+        .card.unlocked.rare-comum { border-bottom: 4px solid #95a5a6; }
+        .card.unlocked.rare-raro { border-bottom: 4px solid #3498db; }
+        .card.unlocked.rare-lendario { border-bottom: 4px solid #f1c40f; }
+
+        /* Badge de Quantidade */
+        .card-count {
+            position: absolute;
+            top: 5px; right: 5px;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: none; /* Escondido se for 0 */
+            z-index: 5;
+            border: 1px solid #555;
         }
 
-        /* ESTADO: BLOQUEADO (Desfocado) */
-        .card.locked {
-            cursor: not-allowed;
+        /* --- MODAL DO PACK --- */
+        .pack-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
         }
-        .card.locked .card-image-wrapper img {
-            filter: blur(4px) grayscale(100%); /* Desfoque e Preto/Branco */
+        .pack-modal.active { opacity: 1; pointer-events: all; }
+
+        .pack-container {
+            text-align: center;
+        }
+
+        /* Cards revelados */
+        .revealed-cards-container {
+            display: flex; gap: 20px;
+            perspective: 1000px;
         }
         
-        /* ANIMAÇÃO DE DESBLOQUEIO */
-        @keyframes unlocked-glow {
-            0% { transform: scale(1); box-shadow: 0 0 0 rgba(204, 0, 0, 0); }
-            50% { transform: scale(1.05); box-shadow: 0 0 20px var(--primary); }
-            100% { transform: scale(1); box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .revealed-card {
+            width: 120px; height: 180px;
+            background: #fff;
+            border-radius: 8px;
+            transform: rotateY(90deg); /* Começa invisível/virada */
+            transition: transform 0.5s;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
+        .revealed-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        
+        .revealed-card.flip-in { transform: rotateY(0deg); }
 
-        /* Classe temporária aplicada via JS */
-        .card.animate-unlock {
-            animation: unlocked-glow 0.8s ease-out;
+        .close-modal-btn {
+            margin-top: 30px;
+            padding: 10px 30px;
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            cursor: pointer;
+            display: none; /* Só aparece depois de revelar */
         }
-        /* Fim da Animação */
+        .close-modal-btn:hover { background: #fff; color: #000; }
 
-        /* Indicador de raridade (borda) - Mantido para distinção visual da borda */
-        .card.unlocked.rare-comum { border-bottom: 4px solid #999; }
-        .card.unlocked.rare-raro { border-bottom: 4px solid #cc0000; }
-        .card.unlocked.rare-lendario { border-bottom: 4px solid #ffcc00; }
+        /* --- CHAT --- */
+        .chat-toggle-btn {
+            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+            background-color: var(--primary); border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4); display: flex;
+            justify-content: center; align-items: center; cursor: pointer; z-index: 1000;
+        }
+        .chat-toggle-btn svg { width: 30px; height: 30px; fill: white; }
 
-        /* Notificação */
+        .chat-window {
+            position: fixed; bottom: 100px; right: 30px; width: var(--chat-width); height: 450px;
+            background-color: #f5f5f5; border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            z-index: 999; transform: translateY(20px); opacity: 0; pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .chat-window.open { transform: translateY(0); opacity: 1; pointer-events: all; }
+        
+        .chat-header { background-color: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; }
+        .chat-body { flex: 1; padding: 15px; overflow-y: auto; background-color: #e5e5e5; display: flex; flex-direction: column; gap: 10px; }
+        
+        .message { max-width: 80%; padding: 10px 15px; border-radius: 10px; font-size: 0.9rem; line-height: 1.4; }
+        .message.bot { background-color: white; color: #333; align-self: flex-start; border-bottom-left-radius: 0; }
+        .message.user { background-color: var(--primary-dark); color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+        
+        .typing-indicator { font-size: 0.7rem; color: #888; margin-left: 15px; margin-bottom: 5px; display: none; }
+        
+        .chat-footer { padding: 10px; background-color: white; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        .chat-footer input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; color: #333; }
+        .chat-footer button { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; }
+
         #notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
-            display: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 100;
+            position: fixed; bottom: 20px; left: 20px; padding: 15px 25px;
+            border-radius: 4px; color: white; font-weight: bold; display: none; z-index: 2001;
         }
-
     </style>
 </head>
 <body>
@@ -247,154 +246,292 @@
     </header>
 
     <div class="container">
-        <section class="mission-box">
-            <div class="mission-info">
-                <h3>Missão do Dia</h3>
-                <p id="daily-text">Carregando...</p>
+        <section class="mission-box" id="mission-box">
+            <div class="mission-header">
+                <div class="mission-info">
+                    <h3>Missão: CNA Quiz</h3>
+                    <p id="mission-desc">Responda 3 perguntas corretamente no chat.</p>
+                </div>
+                <div class="reward-badge">Reward: Card Pack</div>
             </div>
-            <div class="reward-badge">+50 XP</div>
+            
+            <div class="mission-progress-container">
+                <div class="mission-progress-bar" id="progress-bar"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                <span class="mission-status" id="progress-text">0/3</span>
+            </div>
+
+            <button id="btn-open-pack" onclick="openPack()">★ ABRIR PACK (3 CARTAS) ★</button>
         </section>
 
-        <section class="code-area">
-            <input type="text" id="code-input" placeholder="DIGITE O CÓDIGO">
-            <button onclick="redeemCode()">RESGATAR</button>
-        </section>
+        <h2>Sua Coleção (16 Cartas)</h2>
+        <div class="collection-grid" id="card-grid"></div>
+    </div>
 
-        <h2>Sua Coleção (32 Cartas)</h2>
-        
-        <div class="collection-grid" id="card-grid">
+    <div class="pack-modal" id="pack-modal">
+        <h2 style="color:#fff; margin-bottom:30px;">Abrindo Pacote...</h2>
+        <div class="revealed-cards-container" id="revealed-cards">
             </div>
+        <button class="close-modal-btn" onclick="closePackModal()">FECHAR E GUARDAR</button>
     </div>
 
     <div id="notification"></div>
 
+    <div class="chat-toggle-btn" onclick="toggleChat()">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+    </div>
+
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+            <span>CNA Buddy</span>
+            <span style="cursor:pointer;" onclick="toggleChat()">✕</span>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="message bot">Hello! I'm CNA Buddy. Ready to win some cards? Just type "Go" to start!</div>
+        </div>
+        <div class="typing-indicator" id="typing-indicator">Buddy is typing...</div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type here..." onkeypress="handleChatKey(event)">
+            <button onclick="sendChatMessage()">➤</button>
+        </div>
+    </div>
+
     <script>
-        // --- 1. Banco de Dados (32 Cards - Linhas Individuais) ---
+        // --- 1. BANCO DE DADOS (16 Cartas) ---
         const cardsDB = [
-            // CARTAS 01 - 06 (Iniciais)
-            { id: 1, name: "Student Entry", image: "card_01.png", rarity: "comum", code: "CNA1" },
-            { id: 2, name: "Teacher Helper", image: "card_02.png", rarity: "comum", code: "CNA2" },
-            { id: 3, name: "Grammar Whiz", image: "card_03.png", rarity: "raro", code: "CNA3" },
-            { id: 4, name: "Speaking Star", image: "card_04.png", rarity: "raro", code: "CNA4" },
-            { id: 5, name: "CNA Global", image: "card_05.png", rarity: "lendario", code: "CNA5" },
-            { id: 6, name: "Homework Ace", image: "card_06.png", rarity: "lendario", code: "CNA6" },
-
-            // CARTAS 07 - 32 (Finais com códigos sequenciais editáveis)
-            { id: 7, name: "Vocabulary Master", image: "card_07.png", rarity: "comum", code: "CNA07" },
-            { id: 8, name: "Pronunciation Pro", image: "card_08.png", rarity: "comum", code: "CNA08" },
-            { id: 9, name: "Listening Legend", image: "card_09.png", rarity: "comum", code: "CNA09" },
-            { id: 10, name: "Culture Explorer", image: "card_10.png", rarity: "raro", code: "CNA10" },
-            { id: 11, name: "Digital Learner", image: "card_11.png", rarity: "comum", code: "CNA11" },
-            { id: 12, name: "Flashcard Fan", image: "card_12.png", rarity: "comum", code: "CNA12" },
-            { id: 13, name: "Reading Runner", image: "card_13.png", rarity: "raro", code: "CNA13" },
-            { id: 14, name: "Creative Writer", image: "card_14.png", rarity: "comum", code: "CNA14" },
-            { id: 15, name: "Attendance Champ", image: "card_15.png", rarity: "lendario", code: "CNA15" },
-            { id: 16, name: "Test Taker", image: "card_16.png", rarity: "comum", code: "CNA16" },
-            { id: 17, name: "Project Master", image: "card_17.png", rarity: "raro", code: "CNA17" },
-            { id: 18, name: "Presentation Pro", image: "card_18.png", rarity: "comum", code: "CNA18" },
-            { id: 19, name: "Group Work Hero", image: "card_19.png", rarity: "comum", code: "CNA19" },
-            { id: 20, name: "CNA Ambassador", image: "card_20.png", rarity: "lendario", code: "CNA20" },
-            { id: 21, name: "Quick Thinker", image: "card_21.png", rarity: "raro", code: "CNA21" },
-            { id: 22, name: "Morning Star", image: "card_22.png", rarity: "comum", code: "CNA22" },
-            { id: 23, name: "Night Owl", image: "card_23.png", rarity: "comum", code: "CNA23" },
-            { id: 24, name: "Fast Pacer", image: "card_24.png", rarity: "comum", code: "CNA24" },
-            { id: 25, name: "Motivation Max", image: "card_25.png", rarity: "raro", code: "CNA25" },
-            { id: 26, name: "Reviewer King", image: "card_26.png", rarity: "comum", code: "CNA26" },
-            { id: 27, name: "Socializer", image: "card_27.png", rarity: "raro", code: "CNA27" },
-            { id: 28, name: "Tech Wizard", image: "card_28.png", rarity: "comum", code: "CNA28" },
-            { id: 29, name: "Bookworm", image: "card_29.png", rarity: "comum", code: "CNA29" },
-            { id: 30, name: "Perfect Score", image: "card_30.png", rarity: "lendario", code: "CNA30" },
-            { id: 31, name: "Future Star", image: "card_31.png", rarity: "comum", code: "CNA31" },
-            { id: 32, name: "Graduation Goal", image: "card_32.png", rarity: "raro", code: "CNA32" }
+            { id: 1, name: "Student Entry", image: "card_01.png", rarity: "comum" },
+            { id: 2, name: "Teacher Helper", image: "card_02.png", rarity: "comum" },
+            { id: 3, name: "Grammar Whiz", image: "card_03.png", rarity: "raro" },
+            { id: 4, name: "Speaking Star", image: "card_04.png", rarity: "raro" },
+            { id: 5, name: "Listening Pro", image: "card_05.png", rarity: "comum" },
+            { id: 6, name: "Reading Master", image: "card_06.png", rarity: "comum" },
+            { id: 7, name: "Writing Hero", image: "card_07.png", rarity: "raro" },
+            { id: 8, name: "Homework Ace", image: "card_08.png", rarity: "lendario" },
+            { id: 9, name: "Early Bird", image: "card_09.png", rarity: "comum" },
+            { id: 10, name: "Night Owl", image: "card_10.png", rarity: "comum" },
+            { id: 11, name: "Team Player", image: "card_11.png", rarity: "raro" },
+            { id: 12, name: "Solo Artist", image: "card_12.png", rarity: "comum" },
+            { id: 13, name: "CNA Spirit", image: "card_13.png", rarity: "lendario" },
+            { id: 14, name: "Tech Wizard", image: "card_14.png", rarity: "raro" },
+            { id: 15, name: "Culture Fan", image: "card_15.png", rarity: "comum" },
+            { id: 16, name: "Global Citizen", image: "card_16.png", rarity: "lendario" }
         ];
 
-
-        const missionsDB = [
-            "Complete 3 lições no Web Lessons.",
-            "Assista a 1 vídeo em inglês sem legendas.",
-            "Aprenda 5 palavras novas hoje.",
-            "Faça check-in na sua unidade CNA.",
-            "Pratique conversação por 10 minutos."
+        // Perguntas do Bot
+        const questionsDB = [
+            { q: "What is the past of 'Go'?", a: ["went"] },
+            { q: "Complete: She ___ happy today. (is/are)", a: ["is"] },
+            { q: "What is the opposite of 'Big'?", a: ["small", "little"] },
+            { q: "Past participle of 'Do'?", a: ["done"] },
+            { q: "How do you say 'Maçã' in English?", a: ["apple"] },
+            { q: "Complete: They ___ playing soccer. (is/are)", a: ["are"] },
+            { q: "What color is the sky?", a: ["blue"] }
         ];
 
-        // --- 2. Estado ---
-        let userCollection = JSON.parse(localStorage.getItem('cnaCollection')) || [];
+        // --- 2. ESTADO DO USUÁRIO ---
+        // Agora collection é um objeto: { id_carta: quantidade }
+        // Ex: { 1: 5, 2: 1 }
+        let userCollection = JSON.parse(localStorage.getItem('cnaCollectionV3')) || {};
+        
+        // Estado da Missão
+        let missionProgress = 0;
+        const missionTarget = 3;
+        let isMissionComplete = false;
+        
+        // Estado do Chat
+        let chatState = "IDLE"; // IDLE, ASKING
+        let currentQuestion = null;
+
+        // --- 3. RENDERIZAÇÃO ---
         const gridElement = document.getElementById('card-grid');
-        const notification = document.getElementById('notification');
 
-        // --- 3. Renderização: Exibe todas as 32 cartas com o estado (Bloqueado/Desbloqueado) ---
         function renderCollection() {
             gridElement.innerHTML = '';
-
+            
             cardsDB.forEach(card => {
-                const isUnlocked = userCollection.includes(card.id);
+                const qty = userCollection[card.id] || 0;
+                const isUnlocked = qty > 0;
                 
                 const cardEl = document.createElement('div');
-                cardEl.id = `card-${card.id}`; 
                 cardEl.className = `card ${isUnlocked ? 'unlocked' : 'locked'} rare-${card.rarity}`;
                 
-                // Estrutura do Card com APENAS Imagem
+                // Placeholder se não tiver imagem
+                const imgSrc = `cards/${card.image}`; 
+                const fallbackSrc = `https://placehold.co/200x300/333/FFF?text=${card.name.replace(' ', '+')}`;
+
                 cardEl.innerHTML = `
                     <div class="card-image-wrapper">
-                        <img src="cards/${card.image}" alt="Card ${isUnlocked ? card.name : 'Bloqueado'}">
+                        <img src="${imgSrc}" onerror="this.src='${fallbackSrc}'" alt="${card.name}">
                     </div>
-                    <div style="position:absolute; width:100%; height:100%; top:0; z-index:5;"></div>
+                    <div class="card-count" style="display:${isUnlocked ? 'block' : 'none'}">x${qty}</div>
                 `;
                 gridElement.appendChild(cardEl);
             });
         }
 
-        // --- 4. Missão ---
-        function setDailyMission() {
-            const txt = missionsDB[Math.floor(Math.random() * missionsDB.length)];
-            document.getElementById('daily-text').innerText = txt;
-        }
+        // --- 4. SISTEMA DE PACK ---
+        function openPack() {
+            if (!isMissionComplete) return;
 
-        // --- 5. Resgate ---
-        function redeemCode() {
-            const input = document.getElementById('code-input');
-            const code = input.value.trim().toUpperCase();
-            // Procura o card usando o código
-            const foundCard = cardsDB.find(c => c.code === code);
-
-            if (foundCard) {
-                if (userCollection.includes(foundCard.id)) {
-                    showNotification("Você já possui este card.", "#e67e22");
-                } else {
-                    userCollection.push(foundCard.id);
-                    saveData();
-                    
-                    renderCollection();
-                    
-                    const unlockedCardEl = document.getElementById(`card-${foundCard.id}`);
-                    if (unlockedCardEl) {
-                        unlockedCardEl.classList.remove('animate-unlock');
-                        void unlockedCardEl.offsetWidth; 
-                        unlockedCardEl.classList.add('animate-unlock');
-                    }
-
-                    // A notificação usa o nome da carta para feedback
-                    showNotification(`Card ${foundCard.name} liberado!`, "#27ae60");
-                }
-            } else {
-                showNotification("Código inválido.", "#c0392b");
+            // 1. Escolher 3 cartas aleatórias
+            const newCards = [];
+            for(let i=0; i<3; i++) {
+                const randomCard = cardsDB[Math.floor(Math.random() * cardsDB.length)];
+                newCards.push(randomCard);
+                
+                // Adicionar à coleção
+                if(!userCollection[randomCard.id]) userCollection[randomCard.id] = 0;
+                userCollection[randomCard.id]++;
             }
-            input.value = '';
+            
+            // Salvar
+            localStorage.setItem('cnaCollectionV3', JSON.stringify(userCollection));
+
+            // 2. Animação UI
+            const modal = document.getElementById('pack-modal');
+            const container = document.getElementById('revealed-cards');
+            const closeBtn = document.querySelector('.close-modal-btn');
+            
+            container.innerHTML = '';
+            closeBtn.style.display = 'none';
+            modal.classList.add('active');
+
+            // Criar elementos das cartas (virados)
+            newCards.forEach((card, index) => {
+                const div = document.createElement('div');
+                div.className = 'revealed-card';
+                // Usando placeholder visual para o card revelado
+                const fallbackSrc = `https://placehold.co/200x300/eee/333?text=${card.name}`;
+                div.innerHTML = `<img src="cards/${card.image}" onerror="this.src='${fallbackSrc}'">`;
+                container.appendChild(div);
+
+                // Efeito de virar sequencial
+                setTimeout(() => {
+                    div.classList.add('flip-in');
+                }, 500 + (index * 400));
+            });
+
+            // Botão fechar aparece depois
+            setTimeout(() => {
+                closeBtn.style.display = 'block';
+            }, 2000);
+            
+            // Resetar missão (opcional) ou bloquear botão
+            document.getElementById('btn-open-pack').style.display = 'none';
+            document.getElementById('mission-desc').innerText = "Missão completa! Volte amanhã.";
         }
 
-        function saveData() {
-            localStorage.setItem('cnaCollection', JSON.stringify(userCollection));
+        function closePackModal() {
+            document.getElementById('pack-modal').classList.remove('active');
+            renderCollection();
+            showNotification("Cartas adicionadas à coleção!", "#27ae60");
+        }
+
+        // --- 5. LÓGICA DO CHAT (BOT) ---
+        function toggleChat() {
+            document.getElementById('chat-window').classList.toggle('open');
+        }
+
+        function handleChatKey(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addMessage(msg, 'user');
+            input.value = '';
+
+            // Loading do bot
+            document.getElementById('typing-indicator').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('typing-indicator').style.display = 'none';
+                processBotLogic(msg);
+            }, 1000);
+        }
+
+        function addMessage(text, sender) {
+            const chatBody = document.getElementById('chat-body');
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            div.innerText = text;
+            chatBody.appendChild(div);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function processBotLogic(userMsg) {
+            const lowerMsg = userMsg.toLowerCase();
+
+            // Se missão já completa
+            if (isMissionComplete) {
+                addMessage("You already finished today's mission! Open your pack.", 'bot');
+                return;
+            }
+
+            if (chatState === "IDLE") {
+                // Iniciar Quiz
+                askNewQuestion();
+                chatState = "ASKING";
+                return;
+            }
+
+            if (chatState === "ASKING" && currentQuestion) {
+                // Verificar resposta
+                const isCorrect = currentQuestion.a.some(ans => lowerMsg.includes(ans));
+
+                if (isCorrect) {
+                    addMessage("Correct! Great job. (+1 Point)", 'bot');
+                    updateMissionProgress();
+                    
+                    if (!isMissionComplete) {
+                        setTimeout(() => askNewQuestion(), 1500);
+                    } else {
+                        setTimeout(() => addMessage("Mission Complete! Click the button above to get your Card Pack!", 'bot'), 1500);
+                    }
+                } else {
+                    addMessage(`Not exactly. The answer was "${currentQuestion.a[0]}". Let's try another one!`, 'bot');
+                    // Não incrementa progresso, mas manda nova pergunta
+                    setTimeout(() => askNewQuestion(), 1500);
+                }
+            }
+        }
+
+        function askNewQuestion() {
+            const rnd = Math.floor(Math.random() * questionsDB.length);
+            currentQuestion = questionsDB[rnd];
+            addMessage(`Question: ${currentQuestion.q}`, 'bot');
+        }
+
+        function updateMissionProgress() {
+            missionProgress++;
+            const pct = (missionProgress / missionTarget) * 100;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('progress-text').innerText = `${missionProgress}/${missionTarget}`;
+
+            if (missionProgress >= missionTarget) {
+                isMissionComplete = true;
+                const box = document.getElementById('mission-box');
+                box.classList.add('completed-state');
+                
+                // Mostrar botão de pack
+                setTimeout(() => {
+                    document.getElementById('btn-open-pack').style.display = 'block';
+                }, 500);
+            }
         }
 
         function showNotification(text, color) {
-            notification.textContent = text;
-            notification.style.backgroundColor = color;
-            notification.style.display = 'block';
-            setTimeout(() => { notification.style.display = 'none'; }, 3000);
+            const notif = document.getElementById('notification');
+            notif.innerText = text;
+            notif.style.backgroundColor = color;
+            notif.style.display = 'block';
+            setTimeout(() => { notif.style.display = 'none'; }, 3000);
         }
 
         // Init
-        setDailyMission();
         renderCollection();
 
     </script>
